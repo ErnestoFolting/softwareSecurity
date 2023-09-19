@@ -19,9 +19,10 @@ class Session {
         try {
             this.#sessions = fs.readFileSync('./sessions.json', 'utf8');
             this.#sessions = JSON.parse(this.#sessions.trim());
-
+            console.log("SESSIONS:");
             console.log(this.#sessions);
         } catch(e) {
+            console.log("SESSIONS EMPTY");
             this.#sessions = {};
         }
     }
