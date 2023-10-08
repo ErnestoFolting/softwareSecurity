@@ -1,7 +1,6 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const path = require("path");
-const fs = require("fs");
 
 const port = 3000;
 
@@ -10,25 +9,22 @@ app.use(express.json());
 
 const TOKEN_SECRET = "token-secret";
 
-app.get("/", verifyToken, (req, res) => {
-  
+app.get("/", (req, res) => {
+  const token = req.headers["authorization"];
+  if(token){
+    jwt.verify(token, TOKEN_SECRET, (err, decoded) => {
+      if (err) {
+        return res.status(401).sendFile(indexPath);
+      }
+      return res.status(200).json({login:decoded.login})
+    });
+  }else{
+    res.sendFile(path.join(indexPath));
+  }
 });
 
-function verifyToken(req, res, next) {
-  const token = req.headers["authorization"];
-  console.log("token2", token);
-  if (!token) {
-    res.sendFile(path.join(__dirname + "/index.html"));
-  }
+const indexPath = path.join(__dirname + "/index.html");
 
-  jwt.verify(token, TOKEN_SECRET, (err, decoded) => {
-    if (err) {
-      return res.status(401).sendFile(path.join(__dirname + "/index.html"));
-    }
-    req.user = decoded;
-  });
-  next();
-}
 app.get("/logout", (req, res) => {
   res.redirect("/");
 });
