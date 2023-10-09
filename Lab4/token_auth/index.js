@@ -4,6 +4,8 @@ const path = require("path");
 const axios = require("axios");
 const jwksClient = require("jwks-rsa");
 
+require('dotenv').config();
+
 const port = 3000;
 
 const app = express();
@@ -52,8 +54,7 @@ app.post("/api/login", (req, res) => {
     audience: "https://dev-vs5mll4nqah4fkw0.us.auth0.com/api/v2/",
     grant_type: "password",
     client_id: "BSvD7ZWDj24bhu5SfGyPIjTAczIk5qsI",
-    client_secret:
-      "YZW9whGXIW-UYd8oSw0q8Q6BWmafY_svTxDE8bAX3bWcHayoXvbuK562HcgzRXzQ",
+    client_secret: process.env.CLIENT_SECRET,
     username: login,
     password: password
   };
