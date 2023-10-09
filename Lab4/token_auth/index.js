@@ -2,23 +2,37 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const path = require("path");
 const axios = require("axios");
+const jwksClient = require("jwks-rsa");
 
 const port = 3000;
 
 const app = express();
 app.use(express.json());
 
-const TOKEN_SECRET = "token-secret";
 const auth0TokenUrl = "https://dev-vs5mll4nqah4fkw0.us.auth0.com/oauth/token";
+const jwksUri =
+  "https://dev-vs5mll4nqah4fkw0.us.auth0.com/.well-known/jwks.json";
+const jwksClientInstance = jwksClient({
+  jwksUri,
+  cache: true,
+});
 
 app.get("/", (req, res) => {
   const token = req.headers["authorization"];
+
   if (token) {
-    jwt.verify(token, TOKEN_SECRET, (err, decoded) => {
+    const decodedHeader = jwt.decode(token, { complete: true }).header;
+    jwksClientInstance.getSigningKey(decodedHeader.kid, (err, key) => {
       if (err) {
-        return res.status(401).sendFile(indexPath);
+        console.log("error");
       }
-      return res.status(200).json({ login: decoded.login });
+      const signingKey = key.publicKey || key.rsaPublicKey;
+      jwt.verify(token, signingKey, (err, decoded) => {
+        if (err) {
+          return res.status(401).sendFile(indexPath);
+        }
+        return res.status(200).json({ login: decoded.sub });
+      });
     });
   } else {
     res.sendFile(path.join(indexPath));
@@ -41,7 +55,7 @@ app.post("/api/login", (req, res) => {
     client_secret:
       "YZW9whGXIW-UYd8oSw0q8Q6BWmafY_svTxDE8bAX3bWcHayoXvbuK562HcgzRXzQ",
     username: login,
-    password: password,
+    password: password
   };
 
   axios
