@@ -24,6 +24,15 @@
             <input type="submit" value="Login" id="login-form-submit">
         </form>
 
+        <form id="register-form" action="/api/register" method="post">
+            <input type="text" name="name" id="register-name-field" class="login-form-field" placeholder="Name">
+            <input type="text" name="login" id="register-email-field" class="login-form-field" placeholder="Email">
+            <input type="password" name="password" id="register-password-field" class="login-form-field"
+                placeholder="Password">
+            <input type="submit" value="Register" id="register-form-submit">
+        </form>
+        <div id="register-msg"></div>
+
     </main>
 </body>
 
@@ -50,6 +59,7 @@
                 loginForm.remove();
                 loginErrorMsg.remove();
                 loginHeader.remove();
+                regForm.remove();
 
                 mainHolder.append(`Hello ${login}`);
                 logoutLink.style.opacity = 1;
@@ -62,6 +72,10 @@
     const loginForm = document.getElementById("login-form");
     const loginButton = document.getElementById("login-form-submit");
 
+    const regForm = document.getElementById("register-form");
+    const regButton = document.getElementById("register-form-submit");
+    const regMsg = document.getElementById("register-msg");
+
     const loginErrorMsg = document.getElementById("login-error-msg");
     const logoutLink = document.getElementById("logout");
 
@@ -70,6 +84,31 @@
         localStorage.removeItem('token');
         location.reload();
     });
+
+    regButton.addEventListener("click", async (e) => {
+        e.preventDefault();
+        const login = regForm.login.value;
+        const password = regForm.password.value;
+        const name = regForm.name.value;
+        try {
+            const response = await fetch('/api/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ login, password, name }),
+            });
+
+            const data = await response.json();
+            regMsg.innerHTML = data;
+        } catch (error) {
+            regMsg.innerHTML = error?.message;
+        } finally {
+            regForm.login.value = ""
+            regForm.password.value = ""
+            regForm.name.value = ""
+        }
+    })
 
     loginButton.addEventListener("click", async (e) => {
         e.preventDefault();
@@ -153,7 +192,8 @@
         display: block;
     }
 
-    #login-form {
+    #login-form,
+    #register-form {
         align-self: flex-start;
         display: grid;
         justify-items: center;
@@ -173,7 +213,8 @@
         padding: 0px 0px 5px 5px;
     }
 
-    #login-form-submit {
+    #login-form-submit,
+    #register-form-submit {
         width: 100%;
         padding: 7px;
         border: none;
